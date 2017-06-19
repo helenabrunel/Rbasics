@@ -1,0 +1,154 @@
+---
+title: "Basic Statistics with R"
+output: html_document
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Let's do some basic statistics with the iris dataset
+
+```{r, comment=NA}
+head(iris)
+```
+
+
+# Descriptive statistics
+
+By using the function ```summary```, we'll obtain the basic statistics of the whole iris dataset. 
+
+```{r, comment=NA}
+summary(iris)
+```
+
+If, in contrast, we want to know the specific values of the mean, standard deviation, median and range of each class, we can use the functions ```mean```, ```sd```, ```median```, ```min``` and ```max``` as follows:
+
+
+```{r, comment=NA}
+m <- aggregate (.~Species, data=iris, FUN=mean)
+m
+sdev <- aggregate (.~Species, data=iris, FUN=sd)
+sdev
+median <- aggregate (.~Species, data=iris, FUN=median)
+median
+minv <- aggregate (.~Species, data=iris, FUN=min)
+minv
+maxv <- aggregate (.~Species, data=iris, FUN=max)
+maxv
+```
+
+Note that it is not recommended to name objects after function names. 
+
+
+Additional measures such as skewness or kurtosis can also be obtained:
+
+```{r, comment=NA}
+#install.packages("moments")
+library(moments)
+k <- aggregate (.~Species, data=iris, FUN=kurtosis)
+k
+skew <- aggregate (.~Species, data=iris, FUN=skewness)
+skew
+```
+
+To measure the correlation among variables, use the ```cor()``` function:
+
+
+```{r, comment=NA}
+correlations <- cor(iris[,1:4])
+correlations
+```
+
+
+# Hypothesis testing
+Hypothesis testing is a process of making statistical decisions consisting on retaining or rejecting a research hypothesis based on measurements of observed samples. The decision is often based on a statistical mechanism called hypothesis testing. 
+Generally, two or more datasets or classes are compared. A research hypothesis is proposed for the statistical relationship between the two data sets, and this is compared as an alternative to an idealized null hypothesis that proposes no relationship between two data sets.
+
+The comparison is considered *statistically significant* when the relationship between the data sets would be unlikely under the assumption of the null hypothesis, according to a threshold probability—the **significance level**. 
+
+The term significance level ($\alpha$) is used to refer to a pre-chosen probability and the term **P-value** is used to indicate a probability that you calculate after a given study.
+
+If your P value is less than the chosen significance level then you reject the null hypothesis i.e. accept that your sample gives reasonable evidence to support the alternative hypothesis. NOTe that It does NOT imply a "meaningful" or "important" difference.
+
+
+Remember nothing in statistics is ever absolute and in any type of statistical analysis there is always the randomness factor. 
+
+In hypothesis testing there is always some margin of error where it is possible that the test result is not correct. A type I error is the mishap of falsely rejecting a null hypothesis when the null hypothesis is true. The probability of committing a type I error is called the significance level of the hypothesis testing, and is denoted by the Greek letter α .
+
+
+One of the critical decisions in statistical testing is the choice of the right test. 
+Depending on the experimental conditions, we'll need to apply one test or another (Table 1). In any case, we can either choose a parametric test or a nonparametric test. 
+
+![Table 1: Choice of the Statistical Test](/Users/hb493/Desktop/github/Rbasics/Slide72.jpg) 
+
+
+Parametric tests are almost always the preferred option because they can be more powerful BUT they make assumptions about the parameters of the population distribution (assumptyion of Gaussian distribution) that are not always satisfied.
+
+For large sample sizes (n>100), This is not a critical issue since parametric tests are robust (p-values will be nearly correct, even if the population is far from a Gaussian population) and nonparametric tests are powerful (as much as parametric tests).
+
+By contrast, for small sample sizes (n<15), parametric tests are not robust (misleading p-values if assumptions not satisfied) and the nonparametric tests are not powerful (weak p-values).
+
+If we wish to compare the Petal Length between two species (e.g. versicolor and virginica), we can use a two-samples t-test. 
+
+```{r, comment=NA}
+tt <- t.test(iris$Petal.Length[which(iris$Species=="virginica")], iris$Petal.Length[which(iris$Species=="versicolor")])
+tt
+tt$p.value
+
+```
+
+As we can see, with a significant p-value, we can reject the null hypothesis of no differences between the samples, and state that the Petal Length differs significantly between the versicolor and the virginica species. 
+
+The equivalent nonparametric test is the Mann-Whitney U-test:
+
+```{r, comment=NA}
+ut <- wilcox.test(iris$Petal.Length[which(iris$Species=="virginica")], iris$Petal.Length[which(iris$Species=="versicolor")])
+ut
+ut$p.value
+
+```
+
+We observe that they lead to the same conclusion (which is a good sign)
+
+
+If, by contrast, we want to compare the Petal Length among the three species, we'll need to apply an ANOVA test.
+
+```{r, comment=NA}
+at <- aov(data=iris, Petal.Length~Species)
+summary(at)
+summary(at)[[1]][["Pr(>F)"]][1]
+```
+
+When comparing more than two tests, it is often useful to perform a post-hoc test
+
+```{r, comment=NA}
+TukeyHSD(at)
+```
+
+The equivalent nonparametric test is the Kruskal-Wallis W-test:
+
+```{r, comment=NA}
+wt <- kruskal.test(data=iris, Petal.Length~Species)
+summary(wt)
+wt$p.value
+```
+
+```{r, comment=NA}
+#install.packages("PMCMR")
+library(PMCMR)
+posthoc.kruskal.nemenyi.test(x=iris$Petal.Length, g=iris$Species, method="Tukey")
+```
+
+In both cases, the overall p-value and the pairwise p-values are highly significant, confirming that there are significant differences among the iris species. 
+
+
+
+
+
+
+
+
+
+
