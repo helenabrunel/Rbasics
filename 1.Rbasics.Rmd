@@ -1,12 +1,6 @@
----
-title: "R Basics"
-output: html_document
+R Basics
 ---
 
-
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
 
 
 # Obtaining and Installing R
