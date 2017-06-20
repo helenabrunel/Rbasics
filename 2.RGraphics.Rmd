@@ -1,12 +1,6 @@
----
-title: "Plotting with R"
-output: html_document
+Graphics with R
 ---
 
-
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
 
 To test plot functions, we'll use the iris data.set
 
