@@ -62,7 +62,7 @@ Generally, two or more datasets or classes are compared. A research hypothesis i
 
 The comparison is considered *statistically significant* when the relationship between the data sets would be unlikely under the assumption of the null hypothesis, according to a threshold probability—the **significance level**. 
 
-The term significance level ($\alpha$) is used to refer to a pre-chosen probability and the term **P-value** is used to indicate a probability that you calculate after a given study.
+The term significance level (alpha) is used to refer to a pre-chosen probability and the term **P-value** is used to indicate a probability that you calculate after a given study.
 
 If your P value is less than the chosen significance level then you reject the null hypothesis i.e. accept that your sample gives reasonable evidence to support the alternative hypothesis. NOTe that It does NOT imply a "meaningful" or "important" difference.
 
