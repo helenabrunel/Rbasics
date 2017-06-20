@@ -1,12 +1,6 @@
----
-title: "Basic Statistics with R"
-output: html_document
+Basic Statistics with R
 ---
 
-
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
 
 Let's do some basic statistics with the iris dataset
 
