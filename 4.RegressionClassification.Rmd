@@ -1,8 +1,143 @@
 ---
 title: "Regression and Classification using the caret package"
-output: html_document
+output:
+  pdf_document: default
+  html_document: default
 ---
 
+The caret package (short for _C_lassification _A_nd _RE_gression _T_raining) is a set of functions that attempt to streamline the process for creating predictive models. The package contains tools for:
+
+* data splitting
+* pre-processing
+* feature selection
+* model tuning using resampling
+* variable importance estimation
+
+as well as other functionality.
+
+Predictive models are also known as regression models when the output variable takes continuous values, whereas we'll refer to classification when the output variable takes class labels.
+
+# Model Training and Tuning
 
 
-# Work in progress
+Machine learning algorithms typically work with two data sets namely a training set and a test set. This involves partitioning the data into an explicit training dataset used to prepare the model and an unseen test dataset used to evaluate the models performance on unseen data.
+
+The function for partitioning the data using the caret package is ```createDataPartition()```. If the outcome is a factor, the random sampling occurs within each class and should preserve the overall class distribution of the data. For example, to create a single 80\% / 20\% split of the iris data:
+
+```{r, comment=NA}
+library(caret)
+```
+```{r, comment=NA}
+set.seed(3456)
+trainIndex <- createDataPartition(iris$Species, p = .8, list = FALSE, times = 1)
+
+irisTrain <- iris[ trainIndex,]
+irisTest  <- iris[-trainIndex,]
+
+dim(irisTrain)
+table(irisTrain$Species)
+dim(irisTest)
+table(irisTest$Species)
+```
+
+
+The second step of the machine learning will be to specify the parameters of the model. This can be done using then ```trainControl``` function.
+The function ```trainControl``` generates parameters that further control how models are created. The main argument of this function is the method for resampling. The options are:
+* boot :  bootstrap
+* boot632: 0.632 rule bootstrap
+* cv: K-fold cross-validation (K will be specified with the argument ```numbers```)
+* LOOCV: leave-one-out cross validation, also known as jacknife.
+* LGOCV: leave-group-out cross validation, variant of LOOCV for hierarchical data.
+* repeatedcv: repeated cross valisation (The number of repeats is specified inthe argument ```repeats```)
+* oob:  out-of-bag estimation.
+
+
+If for example we want to run algorithms using a 10-fold cross validation, we'll run the following command:
+
+```{r, comment=NA}
+control <- trainControl(method="cv", number=10)
+```
+Let's apply several predictive models and compare their performance. The "accuracy" metric is going to be used to evaluate the models.
+
+```{r, comment=NA}
+metric <- "Accuracy"
+```
+# Model Building
+
+The next step is to Build the models.
+Let’s evaluate 5 different algorithms:
+
+* Linear Discriminant Analysis (LDA) 
+* Classification and Regression Trees (CART)
+* k-Nearest Neighbors (kNN)
+* Support Vector Machines (SVM) 
+* Random Forest (RF)
+
+This is a good mixture of simple linear (LDA), nonlinear (CART, kNN) and complex nonlinear methods (SVM, RF). 
+We reset the random number seed before reach run to ensure that the evaluation of each algorithm is performed using exactly the same data splits. It ensures the results are directly comparable.
+
+```{r, comment=NA}
+library(e1071)
+#Linear Discriminant Analysis
+set.seed(7)
+fit.lda <- train(Species~., data=irisTrain, method="lda", metric=metric, trControl=control)
+fit.lda
+```
+
+```{r, comment=NA}
+#CART
+set.seed(7)
+fit.cart <- train(Species~., data=irisTrain, method="rpart", metric=metric, trControl=control)
+fit.cart
+```
+
+```{r, comment=NA}
+#kNN
+set.seed(7)
+fit.knn <- train(Species~., data=irisTrain, method="knn", metric=metric, trControl=control)
+fit.knn
+```
+
+```{r, comment=NA}
+#SVM
+set.seed(7)
+fit.svm <- train(Species~., data=irisTrain, method="svmLinear2", metric=metric, trControl=control)
+fit.svm
+```
+
+```{r, comment=NA}
+#Random Forest
+library(randomForest)
+set.seed(7)
+fit.rf <- train(Species~., data=irisTrain, method="rf", metric=metric, trControl=control, prox=TRUE)
+fit.rf
+```
+
+# Select the best model
+
+We can compare the accuracy of each model by first creating a list of the created models and using the summary function.
+
+```{r, comment=NA}
+results <- resamples(list(lda=fit.lda, cart=fit.cart, knn=fit.knn, svm=fit.svm, rf=fit.rf))
+summary(results)
+dotplot(results)
+```
+
+We observe that the best model is the ```LDA``` model.
+
+# Make predictions
+
+The LDA was the most accurate model. Now we want to get an idea of the accuracy of the model on our validation set.
+
+We'll predict the values for the validation set (```irisTest```)
+This will give us a final check on the accuracy of LDA model. 
+We can run the LDA model directly on the validation set and summarize the results in a confusion matrix.
+
+```{r, comment=NA}
+predictions <- predict(fit.lda, irisTest)
+confusionMatrix(predictions, irisTest$Species)
+
+```
+
+We can see that the accuracy is 100%. It was a small validation dataset (20%), but this result is within our expected margin of 97% +/-4% suggesting we may have an accurate and a reliably accurate model.
+
